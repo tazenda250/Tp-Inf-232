@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% block title %}Saisie Patient{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1><i class="bi bi-person-plus text-primary me-2"></i>Enregistrement patient</h1>
+  <a href="/donnees" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-table me-1"></i>Voir la base
+  </a>
+</div>
+
+{% if message %}
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+  <i class="bi bi-check-circle-fill me-2"></i>{{ message }}
+  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endif %}
+
+<div class="card">
+  <div class="card-header">
+    <i class="bi bi-clipboard-pulse me-2"></i>Fiche clinique — Données épidémiologiques
+  </div>
+  <div class="card-body">
+    <form method="POST" id="patientForm">
+      <div class="row mb-3">
+        <div class="col-md-3">
+          <label class="form-label fw-semibold">Nom <span class="text-danger">*</span></label>
+          <input type="text" name="nom" class="form-control" required placeholder="Ex: MBARGA">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-semibold">Prénom <span class="text-danger">*</span></label>
+          <input type="text" name="prenom" class="form-control" required placeholder="Ex: Jean-Paul">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label fw-semibold">Âge</label>
+          <input type="number" name="age" class="form-control" min="0" max="120" placeholder="25">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label fw-semibold">Sexe</label>
+          <select name="sexe" class="form-select">
+            <option value="M">Masculin</option>
+            <option value="F">Féminin</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label fw-semibold">Région</label>
+          <select name="region" class="form-select">
+            <option>Centre</option><option>Littoral</option><option>Ouest</option>
+            <option>Nord</option><option>Adamaoua</option><option>Est</option>
+            <option>Sud</option><option>Sud-Ouest</option><option>Nord-Ouest</option>
+            <option>Extrême-Nord</option>
+          </select>
+        </div>
+      </div>
+
+      <hr class="my-3"><p class="text-muted fw-semibold small mb-3">
+        <i class="bi bi-rulers me-1"></i>MESURES ANTHROPOMÉTRIQUES
+      </p>
+      <div class="row mb-3">
+        <div class="col-md-2">
+          <label class="form-label">Poids (kg)</label>
+          <input type="number" name="poids" id="poids" class="form-control" step="0.1"
+                 placeholder="65.0" oninput="calcIMC()">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Taille (m)</label>
+          <input type="number" name="taille" id="taille" class="form-control" step="0.01"
+                 placeholder="1.70" oninput="calcIMC()">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">IMC calculé</label>
+          <input type="text" id="imc_display" class="form-control bg-light" readonly placeholder="—">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Tension (sys/dia mmHg)</label>
+          <div class="input-group">
+            <input type="number" name="tension_sys" class="form-control" placeholder="120">
+            <span class="input-group-text">/</span>
+            <input type="number" name="tension_dia" class="form-control" placeholder="80">
+          </div>
+        </div>
+      </div>
+
+      <hr class="my-3"><p class="text-muted fw-semibold small mb-3">
+        <i class="bi bi-droplet-half me-1"></i>BIOLOGIE
+      </p>
+      <div class="row mb-3">
+        <div class="col-md-3">
+          <label class="form-label">Glycémie (mmol/L)</label>
+          <input type="number" name="glycemie" class="form-control" step="0.1" placeholder="5.5">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Cholestérol total (mmol/L)</label>
+          <input type="number" name="cholesterol" class="form-control" step="0.1" placeholder="4.5">
+        </div>
+      </div>
+
+      <hr class="my-3"><p class="text-muted fw-semibold small mb-3">
+        <i class="bi bi-clipboard2-pulse me-1"></i>DIAGNOSTIC
+      </p>
+      <div class="row mb-3">
+        <div class="col-md-3">
+          <label class="form-label">Pathologie principale</label>
+          <select name="maladie" class="form-select">
+            <option>Aucune</option><option>Diabète</option><option>Hypertension</option>
+            <option>Paludisme</option><option>Tuberculose</option><option>VIH</option>
+            <option>Asthme</option><option>Cancer</option><option>Autre</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Statut clinique</label>
+          <select name="statut" class="form-select">
+            <option>Stable</option><option>En traitement</option>
+            <option>Critique</option><option>Guéri</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Observations</label>
+          <textarea name="observations" class="form-control" rows="2"
+                    placeholder="Notes cliniques…"></textarea>
+        </div>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">
+          <i class="bi bi-save me-2"></i>Enregistrer le patient
+        </button>
+        <button type="reset" class="btn btn-outline-secondary">
+          <i class="bi bi-x-circle me-2"></i>Réinitialiser
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+function calcIMC() {
+  const p = parseFloat(document.getElementById('poids').value);
+  const t = parseFloat(document.getElementById('taille').value);
+  const el = document.getElementById('imc_display');
+  if (p > 0 && t > 0) {
+    const imc = (p / (t * t)).toFixed(1);
+    el.value = imc;
+    el.className = 'form-control ' + (
+      imc < 18.5 ? 'text-info' :
+      imc < 25 ? 'text-success' :
+      imc < 30 ? 'text-warning' : 'text-danger'
+    );
+  } else {
+    el.value = '—';
+  }
+}
+</script>
+{% endblock %}
